@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35303.130
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerForm", "ServerForm\ServerForm.csproj", "{05967EBE-0F78-421E-8D02-81A8625EFEAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientForm", "ClientForm\ClientForm.csproj", "{73919DDC-E9AC-44F7-8D4C-77AAD9D4DE61}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05967EBE-0F78-421E-8D02-81A8625EFEAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05967EBE-0F78-421E-8D02-81A8625EFEAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05967EBE-0F78-421E-8D02-81A8625EFEAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05967EBE-0F78-421E-8D02-81A8625EFEAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73919DDC-E9AC-44F7-8D4C-77AAD9D4DE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73919DDC-E9AC-44F7-8D4C-77AAD9D4DE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73919DDC-E9AC-44F7-8D4C-77AAD9D4DE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73919DDC-E9AC-44F7-8D4C-77AAD9D4DE61}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F2F9DEE-3FC3-4BE8-8967-FA43945E60D3}
+	EndGlobalSection
+EndGlobal
