@@ -59,7 +59,7 @@
             this.buttonSend.UseVisualStyleBackColor = true;
             this.buttonSend.Click += new System.EventHandler(this.buttonSend_Click);
             // 
-            // Form1
+            // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -67,8 +67,8 @@
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.textBoxMessage);
             this.Controls.Add(this.richTextBox1);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "Server";
+            this.Text = "Server";
             this.ResumeLayout(false);
             this.PerformLayout();
 

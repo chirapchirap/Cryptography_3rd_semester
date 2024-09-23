@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace ServerForm
 {
-    public partial class Server : Form
+    public partial class Server : System.Windows.Forms.Form
     {
         private TcpListener listener;
         private TcpClient client;
@@ -17,6 +17,7 @@ namespace ServerForm
         {
             InitializeComponent();
             StartServer();
+            textBoxMessage.KeyDown += textBoxMessage_KeyDown; // Добавляем обработчик для Enter
         }
 
         private async void StartServer()
@@ -41,7 +42,8 @@ namespace ServerForm
                 while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, byteCount);
-                    richTextBox1.Invoke((Action)(() => richTextBox1.AppendText($"Клиент: {message}\n")));
+                    string timestamp = DateTime.Now.ToString("HH:mm");
+                    richTextBox1.Invoke((Action)(() => richTextBox1.AppendText($"[{timestamp}] Клиент: {message}\n")));
                 }
             }
             catch (Exception)
@@ -59,11 +61,27 @@ namespace ServerForm
             if (client != null && stream != null)
             {
                 string message = textBoxMessage.Text;
-                byte[] data = Encoding.UTF8.GetBytes(message);
 
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    return;
+                }
+
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                
                 await stream.WriteAsync(data, 0, data.Length);
-                richTextBox1.AppendText($"Вы (сервер): {message}\n");
+                string timestamp = DateTime.Now.ToString("HH:mm");
+                richTextBox1.AppendText($"[{timestamp}] Вы (сервер): {message}\n");
                 textBoxMessage.Clear();
+            }
+        }
+
+        private void textBoxMessage_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true; // Отключаем стандартное поведение клавиши Enter
+                buttonSend_Click(sender, e); // Вызываем отправку сообщения
             }
         }
 
