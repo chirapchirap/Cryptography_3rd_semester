@@ -15,6 +15,7 @@ namespace ClientForm
         {
             InitializeComponent();
             TryConnectToServer();
+            textBoxMessage.KeyDown += textBoxMessage_KeyDown; // Добавляем обработчик для Enter
         }
 
         // Метод для попытки подключения
@@ -32,7 +33,7 @@ namespace ClientForm
             {
                 richTextBox1.Clear();
                 await Task.Delay(50);
-                richTextBox1.AppendText("Не удалось подключиться к серверу. Нажмите 'Обновить' для повторной попытки.\n");
+                richTextBox1.AppendText("Не удалось подключиться к серверу. Нажмите 'Переподключиться' для повторной попытки.\n");
             }
         }
 
@@ -46,7 +47,8 @@ namespace ClientForm
                 while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, byteCount);
-                    richTextBox1.Invoke((Action)(() => richTextBox1.AppendText($"Сервер: {message}\n")));
+                    string timestamp = DateTime.Now.ToString("HH:mm");
+                    richTextBox1.Invoke((Action)(() => richTextBox1.AppendText($"[{timestamp}] Сервер: {message}\n")));
                 }
             }
             catch (Exception)
@@ -65,10 +67,17 @@ namespace ClientForm
             if (client != null && stream != null)
             {
                 string message = textBoxMessage.Text;
+
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    return;   
+                }
+
                 byte[] data = Encoding.UTF8.GetBytes(message);
 
                 await stream.WriteAsync(data, 0, data.Length);
-                richTextBox1.AppendText($"Вы (клиент): {message}\n");
+                string timestamp = DateTime.Now.ToString("HH:mm");
+                richTextBox1.AppendText($"[{timestamp}] Вы (клиент): {message}\n");
                 textBoxMessage.Clear();
             }
         }
@@ -83,6 +92,16 @@ namespace ClientForm
             }
             richTextBox1.AppendText("Повторная попытка подключения...\n");
             TryConnectToServer();  // Повторно подключаемся
+        }
+
+        // Обработчик нажатия Enter в textBoxMessage
+        private void textBoxMessage_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true; // Отключаем стандартное поведение клавиши Enter
+                buttonSend_Click(sender, e); // Вызываем отправку сообщения
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
