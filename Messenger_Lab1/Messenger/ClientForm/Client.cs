@@ -15,7 +15,7 @@ namespace ClientForm
         {
             InitializeComponent();
             TryConnectToServer();
-            textBoxMessage.KeyDown += textBoxMessage_KeyDown; // Добавляем обработчик для Enter
+            textBoxMessage.KeyDown += TextBoxMessage_KeyDown; // Добавляем обработчик для Enter
         }
 
         // Метод для попытки подключения
@@ -27,7 +27,7 @@ namespace ClientForm
                 await client.ConnectAsync("127.0.0.1", 8080);  // Подключаемся к серверу
                 stream = client.GetStream();  // Получаем поток данных
                 richTextBox1.AppendText("Подключено к серверу.\n");
-                Task.Run(() => ReceiveMessages());  // Начинаем получать сообщения
+                await Task.Run(() => ReceiveMessages());  // Начинаем получать сообщения
             }
             catch (SocketException)  // Обрабатываем исключение при ошибке подключения
             {
@@ -62,7 +62,7 @@ namespace ClientForm
         }
 
         // Метод отправки сообщения
-        private async void buttonSend_Click(object sender, EventArgs e)
+        private async void ButtonSend_Click(object sender, EventArgs e)
         {
             if (client != null && stream != null)
             {
@@ -83,7 +83,7 @@ namespace ClientForm
         }
 
         // Кнопка для повторной попытки подключения
-        private void buttonRefresh_Click(object sender, EventArgs e)
+        private void ButtonRefresh_Click(object sender, EventArgs e)
         {
             if (client != null)
             {
@@ -95,12 +95,12 @@ namespace ClientForm
         }
 
         // Обработчик нажатия Enter в textBoxMessage
-        private void textBoxMessage_KeyDown(object sender, KeyEventArgs e)
+        private void TextBoxMessage_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true; // Отключаем стандартное поведение клавиши Enter
-                buttonSend_Click(sender, e); // Вызываем отправку сообщения
+                ButtonSend_Click(sender, e); // Вызываем отправку сообщения
             }
         }
 

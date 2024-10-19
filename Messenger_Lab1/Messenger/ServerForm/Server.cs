@@ -68,7 +68,7 @@ namespace ServerForm
                 }
 
                 byte[] data = Encoding.UTF8.GetBytes(message);
-                
+
                 await stream.WriteAsync(data, 0, data.Length);
                 string timestamp = DateTime.Now.ToString("HH:mm");
                 richTextBox1.AppendText($"[{timestamp}] Вы (сервер): {message}\n");

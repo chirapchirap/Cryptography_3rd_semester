@@ -58,7 +58,7 @@
             this.buttonSend.TabIndex = 2;
             this.buttonSend.Text = "Отправить сообщение";
             this.buttonSend.UseVisualStyleBackColor = true;
-            this.buttonSend.Click += new System.EventHandler(this.buttonSend_Click);
+            this.buttonSend.Click += new System.EventHandler(this.ButtonSend_Click);
             // 
             // buttonRefresh
             // 
@@ -68,7 +68,7 @@
             this.buttonRefresh.TabIndex = 3;
             this.buttonRefresh.Text = "Переподключиться";
             this.buttonRefresh.UseVisualStyleBackColor = true;
-            this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
+            this.buttonRefresh.Click += new System.EventHandler(this.ButtonRefresh_Click);
             // 
             // Client
             // 
