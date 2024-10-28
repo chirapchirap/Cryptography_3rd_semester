@@ -64,5 +64,16 @@ namespace MessengerServer
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
+
+        public void StopServer()
+        {
+            isRunning = false;
+            server.Stop();
+            foreach (var client in clients)
+            {
+                client.Close();
+            }
+            clients.Clear();
+        }
     }
 }
