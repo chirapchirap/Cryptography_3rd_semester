@@ -61,7 +61,24 @@ namespace MessengerApp
 
         private void SendButton_Clicked(object sender, EventArgs e)
         {
+            if (!isConnected)
+            {
+                DisplayAlert("Ошибка", "Сначала подключитесь к чату", "ОК");
+                return;
+            }
 
+            string messageText = MessageEntry.Text;
+            if (!string.IsNullOrEmpty(messageText))
+            {
+                messages.Add(new ChatMessage
+                {
+                    Message = messageText,
+                    SenderGuid = clientID,
+                    TimeStamp = DateTime.Now,
+                });
+
+                MessageEntry.Text = "";
+            }
         }
     }
 
