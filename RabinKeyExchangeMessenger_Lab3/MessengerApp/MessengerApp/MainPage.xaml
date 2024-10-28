@@ -51,7 +51,8 @@
                    FontSize="18"
                    BackgroundColor="White"
                    TextColor="Black"
-                   Grid.Column="0"/> 
+                   Grid.Column="0"
+                   Completed="OnMessageEntryCompleted"/> 
                 
                 <!-- Кнопка отправки с иконой -->
                 <Button x:Name="SendButton"
