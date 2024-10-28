@@ -34,8 +34,7 @@
         <Label Text="Подключенные клиенты:"
                FontSize="18"
                TextColor="Black"/>
-
-        <CollectionView>
+        <CollectionView x:Name="ClientsListView">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding}"
@@ -49,7 +48,7 @@
                FontSize="18"
                TextColor="Black"/>
 
-        <CollectionView x:Name="MessagesListView">
+        <CollectionView x:Name="LogsListView">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding}"
