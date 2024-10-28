@@ -70,11 +70,15 @@ namespace MessengerServer
             }
             catch (Exception ex)
             {
-                
+                string message = "Ошибка клиента";
+                ExceptionThrown?.Invoke(clientID, message, ex);
             }
             finally
             {
-
+                // Удаление клиента и закрытие соединения 
+                ClientDisconnected?.Invoke(clientID);
+                clients.TryRemove(clientID, out _);
+                client.Close();
             }
         }
     }
