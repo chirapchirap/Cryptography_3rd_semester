@@ -32,7 +32,7 @@ namespace MessengerServer
             {
                 TcpClient client = await server.AcceptTcpClientAsync();
                 clients.Add(client);
-                Task.Run(() => HandleClientsAsync());
+                Task.Run(() => HandleClientsAsync(client));
             }
         }
     }
