@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MessengerApp.MainPage"
+             BackgroundColor="White">
+    <ContentPage.Content>
+        <StackLayout Padding="10" Spacing="10">
+            <!-- Заголовок -->
+            <Label Text="Мессенджер с шифрованием Рабина"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"/>
+
+            <Label x:Name="ConnectionStatusLabel"
+                   Text="Состояние: отключен"
+                   FontSize="16"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Состояние: " TextColor="Black"/>
+                        <Span x:Name="StatusText" Text="Отключен" TextColor="Red"/>
+                    </FormattedString>
+                </Label.FormattedText>
+                
+            </Label>
+
+
+
+            <!-- Список сообщений -->
+            <CollectionView
+                x:Name="MessagesList"
+                BackgroundColor="WhiteSmoke"
+                HeightRequest="380"
+                SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="5" Padding="10" BorderColor="DarkGray" BackgroundColor="White">
+                            <Label Text="{Binding .}" FontSize="16" TextColor="Black"/>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            
+            <!-- Поле для ввода сообщения и кнопка отправки -->
+            <Grid ColumnDefinitions="*, Auto" Padding="0, 10, 0, 0" ColumnSpacing="10">
+                
+                <!-- Поле для ввода сообщения -->
+                <Entry x:Name="MessageEntry"
+                   Placeholder="Введите сообщение"
+                   FontSize="18"
+                   BackgroundColor="White"
+                   TextColor="Black"
+                   Grid.Column="0"/> 
+                
+                <!-- Кнопка отправки с иконой -->
+                <Button x:Name="SendButton"
+                        FontSize="18"
+                        TextColor="White"
+                        BackgroundColor="Blue"
+                        Clicked="SendButton_Clicked"
+                        Grid.Column="1">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph=">" Size="24" Color="White"/>
+                    </Button.ImageSource>
+                </Button> 
+            </Grid>
+            
+            <!-- Кнопка подключения -->
+            <Button Text="Подключиться к чату"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontSize="18"
+                    Clicked="ConnectButton_Clicked"
+                    HorizontalOptions="FillAndExpand"
+                    Margin="0, 10, 0, 0"/>
+        </StackLayout>
+    </ContentPage.Content>
+
+</ContentPage>
