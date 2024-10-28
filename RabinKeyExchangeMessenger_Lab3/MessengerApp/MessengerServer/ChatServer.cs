@@ -53,5 +53,16 @@ namespace MessengerServer
             clients.Remove(client);
             client.Close();
         }
+
+        private void BroadcastMessage(string message, TcpClient sender)
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            foreach (var client in clients)
+            {
+                if (client == sender) continue;
+                NetworkStream stream = client.GetStream();
+                stream.Write(buffer, 0, buffer.Length);
+            }
+        }
     }
 }
