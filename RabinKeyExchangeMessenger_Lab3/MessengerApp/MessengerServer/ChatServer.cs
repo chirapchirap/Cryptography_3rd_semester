@@ -18,5 +18,22 @@ namespace MessengerServer
         {
             server = new TcpListener(IPAddress.Parse(ip), port);
         }
+
+        public void StartServer()
+        {
+            server.Start();
+            isRunning = true;
+            Task.Run(() => AcceptClientsAsync());
+        }
+
+        private async void AcceptClientsAsync()
+        {
+            while (isRunning)
+            {
+                TcpClient client = await server.AcceptTcpClientAsync();
+                clients.Add(client);
+                Task.Run(() => HandleClientsAsync());
+            }
+        }
     }
 }
