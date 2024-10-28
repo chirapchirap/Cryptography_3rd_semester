@@ -27,9 +27,18 @@ namespace MessengerServer
             server.ClientConnected += OnClientConnected;
             server.ClientDisconnected += OnClientDisconnected;
             server.MessageReceived += OnMessageReceived;
+            server.ExceptionThrown += OnExceptionThrown;
 
             await server.StartAsync();
             Logs.Add($"Сервер запущен на {ipAddress}:{5000}");
+        }
+
+        private void OnExceptionThrown(Guid clientID, string message, Exception ex)
+        {
+            MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) {message} {clientID}: {ex.Message}");
+            });
         }
 
         private void OnMessageReceived(Guid clientID, string message)
@@ -57,8 +66,6 @@ namespace MessengerServer
                 Logs.Add($"({DateTime.Now:HH:mm:ss}) Клиент {clientID} подключен.");
             });
         }
-
-        pr
 
         private void StopServerButton_Clicked(object sender, EventArgs e)
         {
