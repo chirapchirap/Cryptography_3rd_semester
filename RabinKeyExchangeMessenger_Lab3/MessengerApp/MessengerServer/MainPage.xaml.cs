@@ -32,7 +32,33 @@ namespace MessengerServer
             Logs.Add($"Сервер запущен на {ipAddress}:{5000}");
         }
 
+        private void OnMessageReceived(Guid clientID, string message)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) от {clientID}: {message}");
+            });
+        }
 
+        private void OnClientDisconnected(Guid clientID)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ConnectedClients.Remove(clientID);
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) Клиент {clientID} отключен.");
+            });
+        }
+
+        private void OnClientConnected(Guid clientID)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ConnectedClients.Add(clientID);
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) Клиент {clientID} подключен.");
+            });
+        }
+
+        pr
 
         private void StopServerButton_Clicked(object sender, EventArgs e)
         {
