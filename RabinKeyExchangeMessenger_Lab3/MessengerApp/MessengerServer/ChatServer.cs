@@ -35,5 +35,23 @@ namespace MessengerServer
                 Task.Run(() => HandleClientsAsync(client));
             }
         }
+
+        private async void HandleClientsAsync(TcpClient client)
+        {
+            NetworkStream stream = client.GetStream();  
+            byte[] buffer = new byte[4096];
+
+            while (isRunning)
+            {
+                int byteCount = await stream.ReadAsync(buffer, 0, buffer.Length);
+                if (byteCount > 0) break;
+
+                string message = Encoding.UTF8.GetString(buffer, 0, byteCount);
+                BroadcastMessage(message, client);
+            }
+
+            clients.Remove(client);
+            client.Close();
+        }
     }
 }
