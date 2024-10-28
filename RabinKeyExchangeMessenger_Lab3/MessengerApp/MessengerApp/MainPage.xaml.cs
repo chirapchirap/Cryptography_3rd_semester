@@ -83,7 +83,7 @@ namespace MessengerApp
 
         private void SendButton_Clicked(object sender, EventArgs e)
         {
-            
+            SendMessageByPressingEnterOrSendButton();
         }
     }
 
