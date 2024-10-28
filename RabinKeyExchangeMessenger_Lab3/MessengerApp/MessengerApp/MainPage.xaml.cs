@@ -59,7 +59,7 @@ namespace MessengerApp
             }
         }
 
-        private void SendButton_Clicked(object sender, EventArgs e)
+        private void SendMessageByPressingEnterOrSendButton()
         {
             if (!isConnected)
             {
@@ -80,7 +80,14 @@ namespace MessengerApp
                 MessageEntry.Text = "";
             }
         }
+
+        private void SendButton_Clicked(object sender, EventArgs e)
+        {
+            
+        }
     }
+
+
 
     public class ChatMessage
     {
