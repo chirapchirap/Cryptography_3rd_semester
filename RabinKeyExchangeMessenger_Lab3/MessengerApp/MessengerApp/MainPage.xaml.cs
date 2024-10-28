@@ -85,6 +85,11 @@ namespace MessengerApp
         {
             SendMessageByPressingEnterOrSendButton();
         }
+
+        private void OnMessageEntryCompleted(object sender, EventArgs e)
+        {
+            SendMessageByPressingEnterOrSendButton();
+        }
     }
 
 
