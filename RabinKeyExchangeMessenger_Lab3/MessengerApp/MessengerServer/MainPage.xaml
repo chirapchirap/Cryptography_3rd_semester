@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MessengerServer.MainPage">
+
+    <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+
+        <Label x:Name="ServerStatusLabel"
+               Text="Сервер: остановлен"
+               FontSize="20"
+               HorizontalOptions="Center"
+               TextColor="Red">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Сервер: " TextColor="Black"/>
+                    <Span x:Name="StatusText" Text="остановлен" TextColor="Red"/>
+                </FormattedString>
+            </Label.FormattedText>            
+        </Label>
+
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+            <Button Text="Запустить сервер"
+                    Clicked="StartServerButton_Clicked"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+            <Button Text="Остановить сервер"
+                    Clicked="StopServerButton_Clicked"
+                    BackgroundColor="Red"
+                    TextColor="White"/>
+        </HorizontalStackLayout>
+
+        <Label Text="Подключенные клиенты:"
+               FontSize="18"
+               TextColor="Black"/>
+
+        <CollectionView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding}"
+                           FontSize="16"
+                           Padding="5"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>           
+        </CollectionView>
+
+        <Label Text="Журнал сообщений: "
+               FontSize="18"
+               TextColor="Black"/>
+
+        <CollectionView x:Name="MessagesListView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding}"
+                           FontSize="16"
+                           Padding="5"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>            
+        </CollectionView>
+    </VerticalStackLayout>
+
+</ContentPage>
