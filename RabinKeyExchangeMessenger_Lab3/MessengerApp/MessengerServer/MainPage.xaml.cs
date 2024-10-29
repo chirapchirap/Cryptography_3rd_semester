@@ -30,7 +30,7 @@ namespace MessengerServer
             server.ExceptionThrown += OnExceptionThrown;
 
             await server.StartAsync();
-            Logs.Add($"Сервер запущен на {ipAddress}:{5000}");
+            Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
         }
 
         private void OnExceptionThrown(Guid clientID, string message, Exception ex)
@@ -69,7 +69,16 @@ namespace MessengerServer
 
         private void StopServerButton_Clicked(object sender, EventArgs e)
         {
-
+            if (server != null)
+            {
+                server.Stop();
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер остановлен");
+                server.ClientConnected -= OnClientConnected;
+                server.ClientDisconnected -= OnClientDisconnected;
+                server.MessageReceived -= OnMessageReceived;
+                server = null;
+                ConnectedClients.Clear();
+            }
         }
     }
 
