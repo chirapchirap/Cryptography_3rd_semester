@@ -81,5 +81,15 @@ namespace MessengerServer
                 client.Close();
             }
         }
+
+        public void Stop()
+        {
+            foreach (var client in clients)
+            {
+                client.Value.Close();
+            }
+            clients.Clear();
+            tcpListener.Stop();
+        }
     }
 }
