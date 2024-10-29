@@ -19,33 +19,39 @@ namespace MessengerServer
         public event Action<Guid, string> MessageReceived;
         public event Action<Guid, string, Exception> ExceptionThrown;
 
+        private bool isRunning = false;
         public MessengerServer(string ip, int port)
         {
             tcpListener = new TcpListener(IPAddress.Parse(ip), port);
         }
 
-        public async Task StartAsync()
+        public Task StartAsync()
         {
+            isRunning = true;
             tcpListener.Start();
-
-            while (true)
+            Task.Run(async () =>
             {
-                var client = await tcpListener.AcceptTcpClientAsync();
-                var clientID = Guid.NewGuid();
-                
-                clients.TryAdd(clientID, client);
+                while (isRunning)
+                {
+                    var client = await tcpListener.AcceptTcpClientAsync();
+                    var clientID = Guid.NewGuid();
 
-                ClientConnected?.Invoke(clientID);
+                    clients.TryAdd(clientID, client);
 
-                _ = Task.Run(() => HandleClientAsync(client, clientID));
-            }
+                    ClientConnected?.Invoke(clientID);
+
+                    _ = Task.Run(() => HandleClientAsync(client, clientID));
+                }
+            });
+
+            return Task.CompletedTask;
         }
 
         private async void HandleClientAsync(TcpClient client, Guid clientID)
         {
             try
             {
-                using (var stream = client.GetStream()) 
+                using (var stream = client.GetStream())
                 {
                     // Отправка GUID клиенту
                     string welcomeMessage = $"Ваш уникальный идентификатор: {clientID}";
@@ -54,10 +60,10 @@ namespace MessengerServer
 
                     byte[] buffer = new byte[1024];
                     int bytesRead;
-                    
+
                     // Чтение данных от клиента
                     while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-                    { 
+                    {
                         string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
                         // Вызов события получения сообщения 
@@ -111,6 +117,7 @@ namespace MessengerServer
 
         public void Stop()
         {
+            isRunning = false;
             foreach (var client in clients)
             {
                 client.Value.Close();
