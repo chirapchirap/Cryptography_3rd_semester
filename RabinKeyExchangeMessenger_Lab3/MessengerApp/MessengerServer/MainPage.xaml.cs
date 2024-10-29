@@ -33,11 +33,11 @@ namespace MessengerServer
             Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
         }
 
-        private void OnExceptionThrown(Guid clientID, string message, Exception ex)
+        private void OnExceptionThrown(Guid clientID, string logMessage, Exception ex)
         {
             MainThread.InvokeOnMainThreadAsync(() =>
             {
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) {message} {clientID}: {ex.Message}");
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) {logMessage} {clientID}: {ex.Message}");
             });
         }
 
