@@ -22,6 +22,7 @@ namespace MessengerServer
 
         private async void StartServerButton_Clicked(object sender, EventArgs e)
         {
+            startServerButton.IsEnabled = false;
             server = new MessengerServer(ipAddress, port);
 
             server.ClientConnected += OnClientConnected;
@@ -33,6 +34,7 @@ namespace MessengerServer
             Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
             StatusText.Text = "запущен";
             StatusText.TextColor = Colors.Red;
+            stopServerButton.IsEnabled = true;
         }
 
         private void OnExceptionThrown(Guid clientID, string logMessage, Exception ex)
@@ -73,6 +75,7 @@ namespace MessengerServer
         {
             if (server != null)
             {
+                stopServerButton.IsEnabled=false;
                 server.Stop();
                 Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер остановлен");
                 StatusText.Text = "запущен";
@@ -83,6 +86,7 @@ namespace MessengerServer
                 server.MessageReceived -= OnMessageReceived;
                 server = null;
                 ConnectedClients.Clear();
+                startServerButton.IsEnabled=true;
             }
         }
     }
