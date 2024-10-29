@@ -30,7 +30,8 @@
                     Text="Остановить сервер"
                     Clicked="StopServerButton_Clicked"
                     BackgroundColor="Red"
-                    TextColor="White"/>
+                    TextColor="White"
+                    IsEnabled="False"/>
         </HorizontalStackLayout>
 
         <Label Text="Подключенные клиенты:"
