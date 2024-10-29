@@ -82,6 +82,33 @@ namespace MessengerServer
             }
         }
 
+        private async Task BroadcastMessageAsync(Guid senderID, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes($"({DateTime.Now:HH:mm:ss}) {senderID}: {message}");
+
+            foreach (var kvp in clients)
+            {
+                var clientID = kvp.Key;
+                var client = kvp.Value;
+
+                if (clientID != senderID)
+                {
+                    try
+                    {
+                        using (var stream = client.GetStream())
+                        {
+                            await stream.WriteAsync(data, 0, data.Length);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        string logMessage = "Ошибка отправки сообщения клиенту";
+                        ExceptionThrown?.Invoke(clientID, logMessage, ex);
+                    }
+                }
+            }
+        }
+
         public void Stop()
         {
             foreach (var client in clients)
