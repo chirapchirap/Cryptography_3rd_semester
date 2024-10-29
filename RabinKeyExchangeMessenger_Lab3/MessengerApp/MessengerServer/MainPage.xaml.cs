@@ -33,7 +33,7 @@ namespace MessengerServer
             await server.StartAsync();
             Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
             StatusText.Text = "запущен";
-            StatusText.TextColor = Colors.Red;
+            StatusText.TextColor = Colors.Green;
             stopServerButton.IsEnabled = true;
         }
 
@@ -77,16 +77,17 @@ namespace MessengerServer
             {
                 stopServerButton.IsEnabled=false;
                 server.Stop();
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер остановлен");
-                StatusText.Text = "запущен";
-                StatusText.TextColor = Colors.Red;
-
+                
                 server.ClientConnected -= OnClientConnected;
                 server.ClientDisconnected -= OnClientDisconnected;
                 server.MessageReceived -= OnMessageReceived;
                 server = null;
                 ConnectedClients.Clear();
+                Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер остановлен");
+
                 startServerButton.IsEnabled=true;
+                StatusText.Text = "остановлен";
+                StatusText.TextColor = Colors.Red;
             }
         }
     }
