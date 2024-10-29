@@ -21,12 +21,12 @@
         </Label>
 
         <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
-            <Button x:Name="StartServerButton"
+            <Button x:Name="startServerButton"
                     Text="Запустить сервер"
                     Clicked="StartServerButton_Clicked"
                     BackgroundColor="Green"
                     TextColor="White"/>
-            <Button x:Name="StopServerButton"
+            <Button x:Name="stopServerButton"
                     Text="Остановить сервер"
                     Clicked="StopServerButton_Clicked"
                     BackgroundColor="Red"
