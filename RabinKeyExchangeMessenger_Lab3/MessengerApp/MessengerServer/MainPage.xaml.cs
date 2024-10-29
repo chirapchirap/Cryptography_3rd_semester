@@ -7,7 +7,7 @@ namespace MessengerServer
     public partial class MainPage : ContentPage
     {
         private string ipAddress = "127.0.0.1";
-        private int port = 5000;
+        private int port = 12345;
 
         private MessengerServer server;
         public ObservableCollection<string> Logs { get; set; } = new ObservableCollection<string>();
@@ -29,7 +29,6 @@ namespace MessengerServer
             server.ClientDisconnected += OnClientDisconnected;
             server.MessageReceived += OnMessageReceived;
             server.ExceptionThrown += OnExceptionThrown;
-
             await server.StartAsync();
             Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
             StatusText.Text = "запущен";
