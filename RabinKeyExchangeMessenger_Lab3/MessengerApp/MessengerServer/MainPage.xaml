@@ -3,24 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MessengerServer.MainPage">
 
-    <VerticalStackLayout
-            Padding="30,0"
-            Spacing="25">
-
+    <Grid RowDefinitions="Auto, Auto, Auto, 30, Auto, *" Padding="20,0,20,20" RowSpacing="20">
+        
         <Label x:Name="ServerStatusLabel"
                Text="Сервер: остановлен"
                FontSize="20"
                HorizontalOptions="Center"
-               TextColor="Red">
+               TextColor="Red"
+               Grid.Row="0">
             <Label.FormattedText>
                 <FormattedString>
                     <Span Text="Сервер: " TextColor="Black"/>
                     <Span x:Name="StatusText" Text="остановлен" TextColor="Red"/>
                 </FormattedString>
-            </Label.FormattedText>            
+            </Label.FormattedText>
         </Label>
 
-        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10" Grid.Row="1">
             <Button x:Name="startServerButton"
                     Text="Запустить сервер"
                     Clicked="StartServerButton_Clicked"
@@ -36,30 +35,41 @@
 
         <Label Text="Подключенные клиенты:"
                FontSize="18"
-               TextColor="Black"/>
-        <CollectionView x:Name="ClientsListView">
+               TextColor="Black"
+               Grid.Row="2"/>
+        <CollectionView x:Name="ClientsListView"
+                        BackgroundColor="WhiteSmoke"
+                        VerticalScrollBarVisibility="Always"
+                        HorizontalScrollBarVisibility="Never"
+                        ItemsUpdatingScrollMode="KeepLastItemInView"
+                        Grid.Row="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding}"
                            FontSize="16"
                            Padding="5"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>           
+            </CollectionView.ItemTemplate>
         </CollectionView>
 
         <Label Text="Журнал сообщений: "
                FontSize="18"
-               TextColor="Black"/>
+               TextColor="Black"
+               Grid.Row="4"/>
 
-        <CollectionView x:Name="LogsListView">
+        <CollectionView x:Name="LogsListView"
+                        BackgroundColor="WhiteSmoke"
+                        VerticalScrollBarVisibility="Always"
+                        HorizontalScrollBarVisibility="Never"
+                        ItemsUpdatingScrollMode="KeepLastItemInView"
+                        Grid.Row="5">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding}"
                            FontSize="16"
                            Padding="5"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>            
+            </CollectionView.ItemTemplate>
         </CollectionView>
-    </VerticalStackLayout>
-
+    </Grid>
 </ContentPage>
