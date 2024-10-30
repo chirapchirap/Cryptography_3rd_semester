@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.Sockets;
+using System.Text;
 
 
 namespace MessengerApp
@@ -10,6 +11,7 @@ namespace MessengerApp
         private ObservableCollection<ChatMessage> messages = new ObservableCollection<ChatMessage>();
         private TcpClient tcpClient;
         private NetworkStream networkStream;
+        private CancellationTokenSource receiveCts;
         private string clientID;
 
         public MainPage()
@@ -30,7 +32,12 @@ namespace MessengerApp
                     tcpClient = new TcpClient();
                     await tcpClient.ConnectAsync("127.0.0.1", 12345);
                     networkStream = tcpClient.GetStream();
-                    clientID = Guid.NewGuid().ToString();
+                    receiveCts = new CancellationTokenSource();
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), receiveCts.Token);
+                    clientID = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
                     ConnectionStatusLabel.FormattedText = new FormattedString
                     {
                         Spans = {
@@ -44,8 +51,8 @@ namespace MessengerApp
 
                     messages.Add(new ChatMessage
                     {
-                        Message = "Вы подключены к чату.",
-                        SenderGuid = clientID,
+                        Message = $"Вы присоединились к чату как {clientID}.",
+                        SenderGuid = "Система",
                     });
 
                 }
