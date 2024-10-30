@@ -54,9 +54,8 @@ namespace MessengerServer
                 using (var stream = client.GetStream())
                 {
                     // Отправка GUID клиенту
-                    string welcomeMessage = $"Ваш уникальный идентификатор: {clientID}";
-                    byte[] welcomeData = Encoding.UTF8.GetBytes(welcomeMessage);
-                    await stream.WriteAsync(welcomeData, 0, welcomeData.Length);
+                    byte[] assignedClientID = Encoding.UTF8.GetBytes(clientID.ToString());
+                    await stream.WriteAsync(assignedClientID, 0, assignedClientID.Length);
 
                     byte[] buffer = new byte[1024];
                     int bytesRead;
