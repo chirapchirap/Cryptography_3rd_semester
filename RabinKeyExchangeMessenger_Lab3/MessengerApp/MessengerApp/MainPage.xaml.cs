@@ -45,7 +45,6 @@ namespace MessengerApp
                     {
                         Message = "Вы подключены к чату.",
                         SenderGuid = clientID,
-                        TimeStamp = DateTime.Now,
                     });
 
                 }
@@ -74,7 +73,6 @@ namespace MessengerApp
                 {
                     Message = messageText,
                     SenderGuid = clientID,
-                    TimeStamp = DateTime.Now,
                 });
 
                 MessageEntry.Text = "";
@@ -99,11 +97,9 @@ namespace MessengerApp
         public string Message { get; set; }
         public string SenderGuid { get; set; }
 
-        public DateTime TimeStamp { get; set; }
-
         public override string ToString()
         {
-            return $"({TimeStamp:HH:mm:ss}) [{SenderGuid}]: {Message}";
+            return $"({DateTime.Now:HH:mm:ss}) [{SenderGuid}]: {Message}";
         }
     }
 }
