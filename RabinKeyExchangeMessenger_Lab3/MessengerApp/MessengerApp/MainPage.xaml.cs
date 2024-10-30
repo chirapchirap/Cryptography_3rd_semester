@@ -15,6 +15,7 @@ namespace MessengerApp
         public MainPage()
         {
             InitializeComponent();
+            MessagesList.ItemsSource = messages; // привязка коллекции к списку сообщений
         }
 
 
