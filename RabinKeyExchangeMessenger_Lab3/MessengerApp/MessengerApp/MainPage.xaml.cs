@@ -47,13 +47,31 @@ namespace MessengerApp
                     });
 
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     await DisplayAlert("Ошибка", $"Не удалось подключиться к серверу: {ex.Message}", "OK");
                     isConnected = false;
                     UpdateConnectionStatusLabel();
                 }
             }
+            else
+            {
+                DisconnectFromServer();
+            }
+        }
+
+        private void DisconnectFromServer()
+        {
+            receiveCts?.Cancel();
+            networkStream?.Close();
+            tcpClient?.Close();
+            UpdateConnectionStatusLabel();
+            messages.Add(new ChatMessage
+            {
+                Message = "Вы отключились от чата",
+                SenderGuid = "Система"
+            });
+            isConnected = false;
         }
 
         private void UpdateConnectionStatusLabel()
