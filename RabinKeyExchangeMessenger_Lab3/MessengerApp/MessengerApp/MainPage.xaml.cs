@@ -38,16 +38,7 @@ namespace MessengerApp
                     int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), receiveCts.Token);
                     clientID = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    ConnectionStatusLabel.FormattedText = new FormattedString
-                    {
-                        Spans = {
-                            new Span { Text = "Состояние: ", TextColor = Colors.Black },
-                            new Span { Text = "Подключен ", TextColor = Colors.Green },
-                            new Span { Text = "(ID: " , TextColor = Colors.Black },
-                            new Span { Text = $"{clientID}", TextColor= Colors.Blue },
-                            new Span { Text = ")", TextColor = Colors.Black }
-                        }
-                    };
+                    UpdateConnectionStatusLabel(clientID);
 
                     messages.Add(new ChatMessage
                     {
@@ -60,10 +51,34 @@ namespace MessengerApp
                 {
                     await DisplayAlert("Ошибка", $"Не удалось подключиться к серверу: {ex.Message}", "OK");
                     isConnected = false;
-                    StatusText.Text = "отключен";
-                    StatusText.TextColor = Colors.Red;
+                    UpdateConnectionStatusLabel();
                 }
             }
+        }
+
+        private void UpdateConnectionStatusLabel()
+        {
+            ConnectionStatusLabel.FormattedText = new FormattedString
+            {
+                Spans = {
+                            new Span { Text = "Состояние: ", TextColor = Colors.Black },
+                            new Span { Text = "Отключен ", TextColor = Colors.Red },
+                        }
+            };
+        }
+
+        private void UpdateConnectionStatusLabel(string clientID)
+        {
+            ConnectionStatusLabel.FormattedText = new FormattedString
+            {
+                Spans = {
+                            new Span { Text = "Состояние: ", TextColor = Colors.Black },
+                            new Span { Text = "Подключен ", TextColor = Colors.Green },
+                            new Span { Text = "(ID: " , TextColor = Colors.Black },
+                            new Span { Text = $"{clientID}", TextColor= Colors.Blue },
+                            new Span { Text = ")", TextColor = Colors.Black }
+                        }
+            };
         }
 
         private void SendMessageByPressingEnterOrSendButton()
