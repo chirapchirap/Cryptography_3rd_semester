@@ -42,6 +42,7 @@ namespace MessengerApp
 
                     messages.Add(new ChatMessage
                     {
+                        TimeStamp = DateTime.Now,
                         Message = $"Вы присоединились к чату как {clientID}.",
                         SenderGuid = "Система",
                     });
@@ -68,8 +69,10 @@ namespace MessengerApp
             UpdateConnectionStatusLabel();
             messages.Add(new ChatMessage
             {
+                TimeStamp = DateTime.Now,
                 Message = "Вы отключились от чата",
                 SenderGuid = "Система"
+
             });
             isConnected = false;
         }
@@ -112,6 +115,7 @@ namespace MessengerApp
             {
                 messages.Add(new ChatMessage
                 {
+                    TimeStamp = DateTime.Now,
                     Message = messageText,
                     SenderGuid = clientID,
                 });
@@ -135,12 +139,13 @@ namespace MessengerApp
 
     public class ChatMessage
     {
-        public string Message { get; set; }
-        public string SenderGuid { get; set; }
+        public required string Message { get; set; }
+        public required string SenderGuid { get; set; }
+        public required DateTime TimeStamp { get; set; }
 
         public override string ToString()
         {
-            return $"({DateTime.Now:HH:mm:ss}) [{SenderGuid}]: {Message}";
+            return $"({TimeStamp:HH:mm:ss}) [{SenderGuid}]: {Message}";
         }
     }
 }
