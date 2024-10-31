@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Text;
+using ClassLib;
 
 
 namespace MessengerApp
@@ -8,7 +9,7 @@ namespace MessengerApp
     public partial class MainPage : ContentPage
     {
         private bool isConnected = false;
-        private ObservableCollection<ChatMessage> messages = new ObservableCollection<ChatMessage>();
+        private readonly ObservableCollection<ClassLib.ChatMessage> messages = new ObservableCollection<ClassLib.ChatMessage>();
         private TcpClient tcpClient;
         private NetworkStream networkStream;
         private CancellationTokenSource receiveCts;
@@ -71,11 +72,14 @@ namespace MessengerApp
                     int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), token);
                     if (bytesRead > 0)
                     {
-                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        MainThread.BeginInvokeOnMainThread(() =>
+                        ClassLib.ChatMessage? message = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                        if (message != null)
                         {
-                            messages.Add(ParseMessage(message));
-                        });
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                messages.Add(message);
+                            });
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -84,7 +88,7 @@ namespace MessengerApp
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
-                            messages.Add(new ChatMessage
+                            messages.Add(new ClassLib.ChatMessage
                             {
                                 TimeStamp = DateTime.Now,
                                 SenderGuid = "Система",
@@ -97,39 +101,13 @@ namespace MessengerApp
             }
         }
 
-        private ChatMessage ParseMessage(string message)
-        {
-            var timeEndIndex = message.IndexOf(')');
-            var guidStartIndex = message.IndexOf("[");
-            var guidEndIndex = message.IndexOf("]");
-            if (timeEndIndex != -1 && guidStartIndex != -1 && guidEndIndex != -1)
-            {
-                // Извлечение времени, GUID отправителя и текста
-                string timeString = message.Substring(1, timeEndIndex - 1); // Время в формате HH:mm:ss
-                string senderGuid = message.Substring(guidStartIndex + 1, guidEndIndex - guidStartIndex - 1);
-                string text = message.Substring(guidEndIndex + 2); // Остальной текст сообщения
-
-                // Попытка преобразования строки времени в DateTime
-                if (DateTime.TryParse(timeString, out DateTime timestamp))
-                {
-                    return new ChatMessage
-                    {
-                        SenderGuid = senderGuid,
-                        Message = text,
-                        TimeStamp = timestamp
-                    };
-                }
-            }
-            return null;
-        }
-
         private void DisconnectFromServer()
         {
             receiveCts?.Cancel();
             networkStream?.Close();
             tcpClient?.Close();
             UpdateConnectionStatusLabel();
-            messages.Add(new ChatMessage
+            messages.Add(new ClassLib.ChatMessage
             {
                 TimeStamp = DateTime.Now,
                 Message = "Вы отключились от чата",
@@ -146,7 +124,7 @@ namespace MessengerApp
                 Spans = {
                             new Span { Text = "Состояние: ", TextColor = Colors.Black },
                             new Span { Text = "Отключен ", TextColor = Colors.Red },
-                        }
+                }
             };
         }
 
@@ -160,29 +138,33 @@ namespace MessengerApp
                             new Span { Text = "(ID: " , TextColor = Colors.Black },
                             new Span { Text = $"{clientID}", TextColor= Colors.Blue },
                             new Span { Text = ")", TextColor = Colors.Black }
-                        }
+                }
             };
         }
 
-        private void SendMessageByPressingEnterOrSendButton()
+        private async void SendMessageByPressingEnterOrSendButton()
         {
             if (!isConnected)
             {
-                DisplayAlert("Ошибка", "Сначала подключитесь к чату", "ОК");
+                await DisplayAlert("Ошибка", "Сначала подключитесь к чату", "ОК");
                 return;
             }
 
             string messageText = MessageEntry.Text;
+
             if (!string.IsNullOrEmpty(messageText))
             {
-                messages.Add(new ChatMessage
+                ClassLib.ChatMessage message = new ClassLib.ChatMessage
                 {
                     TimeStamp = DateTime.Now,
                     Message = messageText,
                     SenderGuid = clientID,
-                });
+                };
+                messages.Add(message);
+                MessageEntry.Text = string.Empty;
 
-                MessageEntry.Text = "";
+                byte[] messageBytes = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize<ClassLib.ChatMessage>(message));
+                await networkStream.WriteAsync(messageBytes.AsMemory(0, messageBytes.Length));
             }
         }
 
@@ -194,18 +176,6 @@ namespace MessengerApp
         private void OnMessageEntryCompleted(object sender, EventArgs e)
         {
             SendMessageByPressingEnterOrSendButton();
-        }
-    }
-
-    public class ChatMessage
-    {
-        public required string Message { get; set; }
-        public required string SenderGuid { get; set; }
-        public required DateTime TimeStamp { get; set; }
-
-        public override string ToString()
-        {
-            return $"({TimeStamp:HH:mm:ss}) [{SenderGuid}]: {Message}";
         }
     }
 }
