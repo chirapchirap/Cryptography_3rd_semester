@@ -43,29 +43,19 @@ namespace MessengerServer
             stopServerButton.IsEnabled = true;
         }
 
-        private void OnExceptionThrown(Guid clientID, string logMessage, Exception ex)
+        private void OnExceptionThrown(ClassLib.ChatMessage message)
         {
             MainThread.InvokeOnMainThreadAsync(() =>
             {
-                Logs.Add(new ClassLib.ChatMessage
-                {
-                    Message = $"{logMessage} (Ошибка: {ex.Message})",
-                    TimeStamp = DateTime.Now,
-                    SenderGuid = clientID.ToString()
-                });
+                Logs.Add(message);
             });
         }
 
-        private void OnMessageReceived(Guid clientID, string message)
+        private void OnMessageReceived(ClassLib.ChatMessage message)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Logs.Add(new ClassLib.ChatMessage
-                {
-                    Message = message,
-                    TimeStamp = DateTime.Now,
-                    SenderGuid = clientID.ToString()
-                });
+                Logs.Add(message);
             });
         }
 
