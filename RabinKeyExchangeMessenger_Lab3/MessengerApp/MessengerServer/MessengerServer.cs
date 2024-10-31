@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using ClassLib;
 
 namespace MessengerServer
 {
@@ -16,8 +17,8 @@ namespace MessengerServer
 
         public event Action<Guid> ClientConnected;
         public event Action<Guid> ClientDisconnected;
-        public event Action<Guid, string> MessageReceived;
-        public event Action<Guid, string, Exception> ExceptionThrown;
+        public event Action<ClassLib.ChatMessage> MessageReceived;
+        public event Action<ClassLib.ChatMessage> ExceptionThrown;
 
         private bool isRunning = false;
         public MessengerServer(string ip, int port)
@@ -63,20 +64,27 @@ namespace MessengerServer
                     // Чтение данных от клиента
                     while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                        if (chatMessage != null)
+                        {
+                            // Вызов события получения сообщения 
+                            MessageReceived?.Invoke(chatMessage);
 
-                        // Вызов события получения сообщения 
-                        MessageReceived?.Invoke(clientID, message);
-
-                        // Рассылка сообщения всем клиентам
-                        await BroadcastMessageAsync(clientID, message);
+                            // Рассылка сообщения всем клиентам
+                            await BroadcastMessageAsync(chatMessage);
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                string message = "Ошибка клиента";
-                ExceptionThrown?.Invoke(clientID, message, ex);
+                ClassLib.ChatMessage? exceptionMessage = new ClassLib.ChatMessage
+                {
+                    Message = $"{"Ошибка на стороне клиента"} (Ошибка: {ex.Message})",
+                    SenderGuid = clientID.ToString(),
+                    TimeStamp = DateTime.Now,
+                };
+                ExceptionThrown?.Invoke(exceptionMessage);
             }
             finally
             {
