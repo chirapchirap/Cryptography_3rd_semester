@@ -20,7 +20,6 @@ namespace MessengerApp
             MessagesList.ItemsSource = messages; // привязка коллекции к списку сообщений
         }
 
-
         private async void ConnectButton_Clicked(object sender, EventArgs e)
         {
             isConnected = !isConnected;
@@ -47,6 +46,7 @@ namespace MessengerApp
                         SenderGuid = "Система",
                     });
 
+                    StartReceivingMessages(receiveCts.Token);
                 }
                 catch (Exception ex)
                 {
@@ -59,6 +59,68 @@ namespace MessengerApp
             {
                 DisconnectFromServer();
             }
+        }
+
+        private async void StartReceivingMessages(CancellationToken token)
+        {
+            byte[] buffer = new byte[1024];
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), token);
+                    if (bytesRead > 0)
+                    {
+                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            messages.Add(ParseMessage(message));
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (isConnected)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            messages.Add(new ChatMessage
+                            {
+                                TimeStamp = DateTime.Now,
+                                SenderGuid = "Система",
+                                Message = "Потеряно соединение с сервером"
+                            });
+                        });
+                    }
+                    break;
+                }
+            }
+        }
+
+        private ChatMessage ParseMessage(string message)
+        {
+            var timeEndIndex = message.IndexOf(')');
+            var guidStartIndex = message.IndexOf("[");
+            var guidEndIndex = message.IndexOf("]");
+            if (timeEndIndex != -1 && guidStartIndex != -1 && guidEndIndex != -1)
+            {
+                // Извлечение времени, GUID отправителя и текста
+                string timeString = message.Substring(1, timeEndIndex - 1); // Время в формате HH:mm:ss
+                string senderGuid = message.Substring(guidStartIndex + 1, guidEndIndex - guidStartIndex - 1);
+                string text = message.Substring(guidEndIndex + 2); // Остальной текст сообщения
+
+                // Попытка преобразования строки времени в DateTime
+                if (DateTime.TryParse(timeString, out DateTime timestamp))
+                {
+                    return new ChatMessage
+                    {
+                        SenderGuid = senderGuid,
+                        Message = text,
+                        TimeStamp = timestamp
+                    };
+                }
+            }
+            return null;
         }
 
         private void DisconnectFromServer()
@@ -134,8 +196,6 @@ namespace MessengerApp
             SendMessageByPressingEnterOrSendButton();
         }
     }
-
-
 
     public class ChatMessage
     {
