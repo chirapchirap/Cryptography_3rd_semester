@@ -95,16 +95,16 @@ namespace MessengerServer
             }
         }
 
-        private async Task BroadcastMessageAsync(Guid senderID, string message)
+        private async Task BroadcastMessageAsync(ClassLib.ChatMessage message)
         {
-            byte[] data = Encoding.UTF8.GetBytes($"({DateTime.Now:HH:mm:ss}) {senderID}: {message}");
+            byte[] data = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
 
             foreach (var kvp in clients)
             {
                 var clientID = kvp.Key;
                 var client = kvp.Value;
 
-                if (clientID != senderID)
+                if (clientID != Guid.Parse(message.SenderGuid))
                 {
                     try
                     {
@@ -115,8 +115,13 @@ namespace MessengerServer
                     }
                     catch (Exception ex)
                     {
-                        string logMessage = "Ошибка отправки сообщения клиенту";
-                        ExceptionThrown?.Invoke(clientID, logMessage, ex);
+                        ClassLib.ChatMessage? exceptionMessage = new ClassLib.ChatMessage
+                        {
+                            Message = $"{"Ошибка отправки сообщения клиенту"} (Ошибка: {ex.Message})",
+                            SenderGuid = clientID.ToString(),
+                            TimeStamp = DateTime.Now,
+                        };
+                        ExceptionThrown?.Invoke(exceptionMessage);
                     }
                 }
             }
