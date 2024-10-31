@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
+using ClassLib;
+
 
 namespace MessengerServer
 {
@@ -9,8 +11,8 @@ namespace MessengerServer
         private string ipAddress = "127.0.0.1";
         private int port = 12345;
 
-        private MessengerServer server;
-        public ObservableCollection<string> Logs { get; set; } = new ObservableCollection<string>();
+        private MessengerServer? server;
+        public ObservableCollection<ClassLib.ChatMessage> Logs { get; set; } = new ObservableCollection<ClassLib.ChatMessage>();
         public ObservableCollection<Guid> ConnectedClients { get; set; } = new ObservableCollection<Guid>();
 
         public MainPage()
@@ -30,7 +32,12 @@ namespace MessengerServer
             server.MessageReceived += OnMessageReceived;
             server.ExceptionThrown += OnExceptionThrown;
             await server.StartAsync();
-            Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер запущен на {ipAddress}:{5000}");
+            Logs.Add(new ClassLib.ChatMessage
+            {
+                Message = $"Сервер запущен на {ipAddress}:{port}",
+                TimeStamp = DateTime.Now,
+                SenderGuid = "Системное сообщение"
+            });
             StatusText.Text = "запущен";
             StatusText.TextColor = Colors.Green;
             stopServerButton.IsEnabled = true;
@@ -40,7 +47,12 @@ namespace MessengerServer
         {
             MainThread.InvokeOnMainThreadAsync(() =>
             {
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) {logMessage} {clientID}: {ex.Message}");
+                Logs.Add(new ClassLib.ChatMessage
+                {
+                    Message = $"{logMessage} (Ошибка: {ex.Message})",
+                    TimeStamp = DateTime.Now,
+                    SenderGuid = clientID.ToString()
+                });
             });
         }
 
@@ -48,7 +60,12 @@ namespace MessengerServer
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) от {clientID}: {message}");
+                Logs.Add(new ClassLib.ChatMessage
+                {
+                    Message = message,
+                    TimeStamp = DateTime.Now,
+                    SenderGuid = clientID.ToString()
+                });
             });
         }
 
@@ -57,7 +74,12 @@ namespace MessengerServer
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 ConnectedClients.Remove(clientID);
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) Клиент {clientID} отключен.");
+                Logs.Add(new ClassLib.ChatMessage
+                {
+                    Message = "Клиент отключен",
+                    SenderGuid = clientID.ToString(),
+                    TimeStamp = DateTime.Now
+                });
             });
         }
 
@@ -66,7 +88,12 @@ namespace MessengerServer
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 ConnectedClients.Add(clientID);
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) Клиент {clientID} подключен.");
+                Logs.Add(new ClassLib.ChatMessage
+                {
+                    Message = "Клиент подключен",
+                    SenderGuid = clientID.ToString(),
+                    TimeStamp = DateTime.Now
+                });
             });
         }
 
@@ -74,17 +101,21 @@ namespace MessengerServer
         {
             if (server != null)
             {
-                stopServerButton.IsEnabled=false;
+                stopServerButton.IsEnabled = false;
                 server.Stop();
-                
+
                 server.ClientConnected -= OnClientConnected;
                 server.ClientDisconnected -= OnClientDisconnected;
                 server.MessageReceived -= OnMessageReceived;
                 server = null;
                 ConnectedClients.Clear();
-                Logs.Add($"({DateTime.Now:HH:mm:ss}) Сервер остановлен");
-
-                startServerButton.IsEnabled=true;
+                Logs.Add(new ClassLib.ChatMessage
+                {
+                    Message = "Сервер остановлен",
+                    SenderGuid = "Системное сообщение",
+                    TimeStamp = DateTime.Now
+                });
+                startServerButton.IsEnabled = true;
                 StatusText.Text = "остановлен";
                 StatusText.TextColor = Colors.Red;
             }
