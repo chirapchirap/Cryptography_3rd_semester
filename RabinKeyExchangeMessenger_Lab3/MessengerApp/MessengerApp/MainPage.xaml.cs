@@ -48,6 +48,8 @@ namespace MessengerApp
                     });
 
                     StartReceivingMessages(receiveCts.Token);
+                    connectButton.IsEnabled = false;
+                    disconnectButton.IsEnabled = true;
                 }
                 catch (Exception ex)
                 {
@@ -176,6 +178,16 @@ namespace MessengerApp
         private void OnMessageEntryCompleted(object sender, EventArgs e)
         {
             SendMessageByPressingEnterOrSendButton();
+        }
+
+        private void DisconnectButton_Clicked(object sender, EventArgs e)
+        {
+            if (isConnected)
+            {
+                DisconnectFromServer();
+                connectButton.IsEnabled = true; // Разблокируем кнопку подключения
+                disconnectButton.IsEnabled = false; // Блокируем кнопку отключения
+            }
         }
     }
 }
