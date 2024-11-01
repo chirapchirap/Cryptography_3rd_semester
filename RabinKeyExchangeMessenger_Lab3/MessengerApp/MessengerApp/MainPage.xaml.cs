@@ -83,21 +83,26 @@ namespace MessengerApp
                             });
                         }
                     }
+                    else
+                    {
+                        throw new Exception("Соединение с сервером потеряно");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    if (isConnected)
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        MainThread.BeginInvokeOnMainThread(() =>
+                        if (isConnected)
                         {
                             messages.Add(new ClassLib.ChatMessage
                             {
                                 TimeStamp = DateTime.Now,
-                                SenderGuid = "Система",
-                                Message = "Потеряно соединение с сервером"
+                                SenderGuid = "Системное сообщение",
+                                Message = ex.Message,
                             });
-                        });
-                    }
+                            DisconnectFromServer();
+                        }
+                    });
                     break;
                 }
             }
@@ -112,11 +117,13 @@ namespace MessengerApp
             messages.Add(new ClassLib.ChatMessage
             {
                 TimeStamp = DateTime.Now,
-                Message = "Вы отключились от чата",
-                SenderGuid = "Система"
+                Message = "Вы отключены от чата",
+                SenderGuid = "Системное сообщение"
 
             });
             isConnected = false;
+            connectButton.IsEnabled = true; // Разблокируем кнопку подключения
+            disconnectButton.IsEnabled = false; // Блокируем кнопку отключения
         }
 
         private void UpdateConnectionStatusLabel()
@@ -160,11 +167,12 @@ namespace MessengerApp
                 {
                     TimeStamp = DateTime.Now,
                     Message = messageText,
-                    SenderGuid = clientID,
+                    SenderGuid = "Вы",
                 };
                 messages.Add(message);
                 MessageEntry.Text = string.Empty;
-
+                
+                message.SenderGuid = clientID;
                 byte[] messageBytes = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize<ClassLib.ChatMessage>(message));
                 await networkStream.WriteAsync(messageBytes.AsMemory(0, messageBytes.Length));
             }
@@ -185,8 +193,6 @@ namespace MessengerApp
             if (isConnected)
             {
                 DisconnectFromServer();
-                connectButton.IsEnabled = true; // Разблокируем кнопку подключения
-                disconnectButton.IsEnabled = false; // Блокируем кнопку отключения
             }
         }
 
