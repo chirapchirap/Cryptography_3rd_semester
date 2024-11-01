@@ -110,6 +110,17 @@ namespace MessengerServer
                 StatusText.TextColor = Colors.Red;
             }
         }
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            if (server != null) // Проверка, что сервер запущен
+            {
+                stopServerButton.IsEnabled = false;
+                StopServerButton_Clicked(this, EventArgs.Empty); // Остановить сервер и отключить клиентов
+                startServerButton.IsEnabled = true;
+            }
+        }
+
     }
 
 }

@@ -189,5 +189,14 @@ namespace MessengerApp
                 disconnectButton.IsEnabled = false; // Блокируем кнопку отключения
             }
         }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            if (isConnected)
+            {
+                DisconnectFromServer();
+            }
+        }
     }
 }
