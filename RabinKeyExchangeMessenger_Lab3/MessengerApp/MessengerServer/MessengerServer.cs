@@ -62,7 +62,7 @@ namespace MessengerServer
                     int bytesRead;
 
                     // Чтение данных от клиента
-                    while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
                         ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
                         if (chatMessage != null)
@@ -108,10 +108,9 @@ namespace MessengerServer
                 {
                     try
                     {
-                        using (var stream = client.GetStream())
-                        {
-                            await stream.WriteAsync(data, 0, data.Length);
-                        }
+                        var stream = client.GetStream();
+                        await stream.WriteAsync(data, 0, data.Length);
+
                     }
                     catch (Exception ex)
                     {
