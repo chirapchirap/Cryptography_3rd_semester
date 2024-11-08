@@ -41,6 +41,18 @@ namespace ClassLib
             return CombineByteArrays(encryptedBlocks);
         }
 
+        private byte[] CombineByteArrays(List<byte[]> byteArrays)
+        {
+            using (var ms = new System.IO.MemoryStream())
+            {
+                foreach (var byteArray in byteArrays)
+                {
+                    ms.Write(byteArray, 0, byteArray.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+
         private List<byte[]> SplitMessageIntoBlocks(string message)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(message);
