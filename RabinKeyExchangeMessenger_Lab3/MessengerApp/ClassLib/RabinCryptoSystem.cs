@@ -14,12 +14,31 @@ namespace ClassLib
         private readonly BigInteger q;
 
         public BigInteger N { get; }
+        private readonly int blockSize;
 
         public RabinCryptoSystem()
         {
             p = GenerateLargePrime(512);
             q = GenerateLargePrime(512);
             N = p * q;
+
+            blockSize = (N.GetByteCount() - 1);  
+        }
+
+        public byte[] Encrypt(string message)
+        {
+            var blocks = SplitMessageIntoBlocks(message);   
+            var encryptedBlocks = new List<byte[]>();
+
+            foreach (var block in encryptedBlocks)
+            {
+                BigInteger m = new BigInteger(block, isUnsigned: true, isBigEndian: true);
+
+                // Шифрование: c = m^2 mod N
+                BigInteger c = BigInteger.ModPow(m, 2, N);
+                encryptedBlocks.Add(c.ToByteArray(isUnsigned: true, isBigEndian: true));
+            }
+            return CombineByteArrays(encryptedBlocks);
         }
 
         private BigInteger GenerateLargePrime(int bits)
