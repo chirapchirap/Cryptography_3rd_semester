@@ -22,12 +22,12 @@ namespace ClassLib
             q = GenerateLargePrime(512);
             N = p * q;
 
-            blockSize = (N.GetByteCount() - 1);  
+            blockSize = (N.GetByteCount() - 1);
         }
 
         public byte[] Encrypt(string message)
         {
-            var blocks = SplitMessageIntoBlocks(message);   
+            var blocks = SplitMessageIntoBlocks(message);
             var encryptedBlocks = new List<byte[]>();
 
             foreach (var block in encryptedBlocks)
@@ -39,6 +39,22 @@ namespace ClassLib
                 encryptedBlocks.Add(c.ToByteArray(isUnsigned: true, isBigEndian: true));
             }
             return CombineByteArrays(encryptedBlocks);
+        }
+
+        private List<byte[]> SplitMessageIntoBlocks(string message)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(message);
+            int blockCount = (int)Math.Ceiling((double)bytes.Length / blockSize);
+            var blocks = new List<byte[]>(blockCount);
+
+            for (int i = 0; i < blockCount; i++)
+            {
+                int size = Math.Min(blockSize, bytes.Length - (i * blockSize));
+                byte[] block = new byte[size];
+                Array.Copy(bytes, i * blockSize, block, 0, size);
+                blocks.Add(block);
+            }
+            return blocks;
         }
 
         private BigInteger GenerateLargePrime(int bits)
