@@ -14,7 +14,7 @@ namespace MessengerServer
     {
         private readonly TcpListener tcpListener;
         private readonly ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
-
+        private readonly ConcurrentDictionary<Guid, string> publicKeys = new ConcurrentDictionary<Guid, string>();
         public event Action<Guid> ClientConnected;
         public event Action<Guid> ClientDisconnected;
         public event Action<ClassLib.ChatMessage> MessageReceived;
@@ -61,17 +61,39 @@ namespace MessengerServer
                     byte[] buffer = new byte[1024];
                     int bytesRead;
 
+                    // Чтение открытого ключа клиента
+                    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    string publicKey = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    publicKeys[clientID] = publicKey;
+                    // Отправка новому клиенту списка идентификаторов всех уже подключённых клиентов
+                    await SendConnectedClientsList(clientID);
+
+                    // Оповещение всех клиентов о подключении нового клиента
+                    NotifyClientsOfNewClient(clientID);
+
                     // Чтение данных от клиента
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-                        if (chatMessage != null)
+                        var request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        // Проверка, является ли запросом на открытый ключ
+                        if (Guid.TryParse(request, out Guid requestedClientID) && publicKeys.ContainsKey(requestedClientID))
                         {
-                            // Вызов события получения сообщения 
-                            MessageReceived?.Invoke(chatMessage);
+                            // Отправляем запрашиваемый открытый ключ клиенту
+                            string requestedPublicKey = publicKeys[requestedClientID];
+                            byte[] keyData = Encoding.UTF8.GetBytes(requestedPublicKey);
+                            await stream.WriteAsync(keyData, 0, keyData.Length);
+                        }
+                        else
+                        {
+                            ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                            if (chatMessage != null)
+                            {
+                                // Вызов события получения сообщения 
+                                MessageReceived?.Invoke(chatMessage);
 
-                            // Рассылка сообщения всем клиентам
-                            await BroadcastMessageAsync(chatMessage);
+                                // Рассылка сообщения всем клиентам
+                                await BroadcastMessageAsync(chatMessage);
+                            }
                         }
                     }
                 }
@@ -91,6 +113,7 @@ namespace MessengerServer
                 // Удаление клиента и закрытие соединения 
                 ClientDisconnected?.Invoke(clientID);
                 clients.TryRemove(clientID, out _);
+                publicKeys.TryRemove(clientID, out _);
                 client.Close();
             }
         }
