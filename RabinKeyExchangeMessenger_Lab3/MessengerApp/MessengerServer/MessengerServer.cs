@@ -118,6 +118,16 @@ namespace MessengerServer
             }
         }
 
+        private async Task SendConnectedClientsList(Guid newClientID)
+        {
+            if (clients.TryGetValue(newClientID, out TcpClient client))
+            {
+                var connectedClientIds = publicKeys.Keys.ToList();
+                byte[] data = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(connectedClientIds));
+                await client.GetStream().WriteAsync(data, 0, data.Length); 
+            }
+        }
+
         private async Task BroadcastMessageAsync(ClassLib.ChatMessage message)
         {
             byte[] data = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
