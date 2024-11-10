@@ -49,11 +49,6 @@ namespace MessengerApp
 
                     UpdateConnectionStatusLabel(clientID);
 
-                    // Отправка публичного ключа при подключении
-                    string publicKey = cryptoSystem.N.ToString();
-                    byte[] publicKeyBytes = Encoding.UTF8.GetBytes(publicKey);
-                    await networkStream.WriteAsync(publicKeyBytes.AsMemory(0, publicKeyBytes.Length));
-
                     messages.Add(new ChatMessage
                     {
                         TimeStamp = DateTime.Now,
@@ -61,9 +56,18 @@ namespace MessengerApp
                         SenderGuid = "Система",
                     });
 
-                    // Получение списка клиентов и их публичных ключей
-                    await ReceiveClientList();
+                    // Отправка публичного ключа при подключении
+                    string publicKey = cryptoSystem.N.ToString();
+                    byte[] publicKeyBytes = Encoding.UTF8.GetBytes(publicKey);
+                    await networkStream.WriteAsync(publicKeyBytes.AsMemory(0, publicKeyBytes.Length));
 
+                    // Получаем и обновляем список публичных ключей всех клиентов
+                    bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), receiveCts.Token);
+                    string publicKeyListJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    if (publicKeyListJson.StartsWith("UpdatePublicKeys"))
+                    {
+                        UpdatePublicKeys(publicKeyListJson); // Обновляем список публичных ключей
+                    }
                     StartReceivingMessages(receiveCts.Token);
                     connectButton.IsEnabled = false;
                     disconnectButton.IsEnabled = true;
@@ -78,20 +82,6 @@ namespace MessengerApp
             else
             {
                 DisconnectFromServer();
-            }
-        }
-
-        private async Task ReceiveClientList()
-        {
-            byte[] buffer = new byte[1024];
-            int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length));
-            string clientListJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-            var clientList = System.Text.Json.JsonSerializer.Deserialize<List<ClientInfo>>(clientListJson);
-            foreach (var client in clientList)
-            {
-                // Добавляем публичный ключ каждого клиента в словарь
-                clientPublicKeys[client.GUID] = client.PublicKey;
             }
         }
 
@@ -259,13 +249,6 @@ namespace MessengerApp
             {
                 DisconnectFromServer();
             }
-        }
-
-        // Структура для хранения информации о клиенте
-        public class ClientInfo
-        {
-            public Guid GUID { get; set; }
-            public BigInteger PublicKey { get; set; }
         }
     }
 }
