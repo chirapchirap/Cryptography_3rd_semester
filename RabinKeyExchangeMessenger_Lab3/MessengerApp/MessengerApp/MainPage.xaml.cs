@@ -57,8 +57,7 @@ namespace MessengerApp
                     });
 
                     // Отправка публичного ключа при подключении
-                    string publicKey = cryptoSystem.N.ToString();
-                    byte[] publicKeyBytes = Encoding.UTF8.GetBytes(publicKey);
+                    byte[] publicKeyBytes = cryptoSystem.N.ToByteArray();
                     await networkStream.WriteAsync(publicKeyBytes.AsMemory(0, publicKeyBytes.Length));
 
                     // Получаем и обновляем список публичных ключей всех клиентов
@@ -66,7 +65,7 @@ namespace MessengerApp
                     string publicKeyListJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     if (publicKeyListJson.StartsWith("UpdatePublicKeys"))
                     {
-                        UpdatePublicKeys(publicKeyListJson); // Обновляем список публичных ключей
+                        UpdatePublicKeys(publicKeyListJson.Substring("UpdatePublicKeys".Length)); // Обновляем список публичных ключей
                     }
                     StartReceivingMessages(receiveCts.Token);
                     connectButton.IsEnabled = false;
@@ -100,7 +99,7 @@ namespace MessengerApp
                         // Проверяем тип сообщения (например, "UpdatePublicKeys")
                         if (receivedData.StartsWith("UpdatePublicKeys"))
                         {
-                            UpdatePublicKeys(receivedData);
+                            UpdatePublicKeys(receivedData.Substring("UpdatePublicKeys".Length));
                         }
                         else
                         {
@@ -145,11 +144,11 @@ namespace MessengerApp
             clientPublicKeys.Clear(); // Очищаем старый список
 
             // Десериализуем полученные данные, содержащие GUID клиентов и их публичные ключи
-            var keyData = System.Text.Json.JsonSerializer.Deserialize<ConcurrentDictionary<Guid, string>>(data.Substring("UpdatePublicKeys".Length));
+            var keyData = System.Text.Json.JsonSerializer.Deserialize<ConcurrentDictionary<Guid, byte[]>>(data);
 
             foreach (var entry in keyData)
             {
-                BigInteger publicKey = BigInteger.Parse(entry.Value); // Парсим публичный ключ
+                BigInteger publicKey = new BigInteger(entry.Value); // Парсим публичный ключ
                 clientPublicKeys[entry.Key] = publicKey; // Обновляем словарь
             }
         }
