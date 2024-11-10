@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
@@ -20,8 +21,7 @@ namespace MessengerApp
         private RabinCryptoSystem cryptoSystem;
 
         // Словарь для хранения GUID и публичных ключей других клиентов
-        private Dictionary<Guid, BigInteger> clientPublicKeys = new Dictionary<Guid, BigInteger>();
-
+        private ConcurrentDictionary<Guid, BigInteger> clientPublicKeys = new ConcurrentDictionary<Guid, BigInteger>();
 
         public MainPage()
         {
@@ -155,7 +155,7 @@ namespace MessengerApp
             clientPublicKeys.Clear(); // Очищаем старый список
 
             // Десериализуем полученные данные, содержащие GUID клиентов и их публичные ключи
-            var keyData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, string>>(data.Substring("UpdatePublicKeys".Length));
+            var keyData = System.Text.Json.JsonSerializer.Deserialize<ConcurrentDictionary<Guid, string>>(data.Substring("UpdatePublicKeys".Length));
 
             foreach (var entry in keyData)
             {
