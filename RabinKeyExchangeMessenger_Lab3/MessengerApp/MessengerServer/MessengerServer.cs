@@ -21,6 +21,7 @@ namespace MessengerServer
         public event Action<Guid> ClientDisconnected;
         public event Action<ClassLib.ChatMessage> MessageReceived;
         public event Action<ClassLib.ChatMessage> ExceptionThrown;
+        public event Action<ClassLib.ChatMessage> UpdatedPublicKeysListSent;
 
         private bool isRunning = false;
         public MessengerServer(string ip, int port)
@@ -61,12 +62,19 @@ namespace MessengerServer
             byte[] messageData = Encoding.UTF8.GetBytes("UpdatePublicKeys" + json);
 
             // Отправляем список всем клиентам
-            foreach (var client in clients.Values)
+            foreach (var kvp in clients)
             {
                 try
                 {
-                    var stream = client.GetStream();
+                    var stream = kvp.Value.GetStream();
                     await stream.WriteAsync(messageData, 0, messageData.Length);
+                    ClassLib.ChatMessage message = new ClassLib.ChatMessage
+                    {
+                        Message = $"Обновленный словарь ключей отправлен клиенту {kvp.Key}",
+                        SenderGuid = "Сервер",
+                        TimeStamp = DateTime.Now,
+                    };
+                    UpdatedPublicKeysListSent?.Invoke(message);
                 }
                 catch (Exception ex)
                 {
