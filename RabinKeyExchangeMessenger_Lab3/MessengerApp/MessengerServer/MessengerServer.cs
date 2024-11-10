@@ -97,7 +97,7 @@ namespace MessengerServer
                     // Чтение открытого ключа клиента
                     bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                     byte[] publicKey = new byte[bytesRead];
-                    Array.Copy(buffer, publicKey, bytesRead);                    
+                    Array.Copy(buffer, publicKey, bytesRead);
                     publicKeys[clientID] = new BigInteger(publicKey);
 
                     // Отправка списка всех подключенных клиентов (ключи и GUID)
@@ -106,27 +106,17 @@ namespace MessengerServer
                     // Чтение данных от клиента
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        var request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        // Проверка, является ли запросом на открытый ключ
-                        if (Guid.TryParse(request, out Guid requestedClientID) && publicKeys.ContainsKey(requestedClientID))
-                        {
-                            // Отправляем запрашиваемый открытый ключ клиенту
-                            BigInteger requestedPublicKey = publicKeys[requestedClientID];
-                            byte[] keyData = requestedPublicKey.ToByteArray();
-                            await stream.WriteAsync(keyData, 0, keyData.Length);
-                        }
-                        else
-                        {
-                            ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-                            if (chatMessage != null)
-                            {
-                                // Вызов события получения сообщения 
-                                MessageReceived?.Invoke(chatMessage);
 
-                                // Рассылка сообщения всем клиентам
-                                await BroadcastMessageAsync(chatMessage);
-                            }
+                        ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                        if (chatMessage != null)
+                        {
+                            // Вызов события получения сообщения 
+                            MessageReceived?.Invoke(chatMessage);
+
+                            // Рассылка сообщения всем клиентам
+                            await BroadcastMessageAsync(chatMessage);
                         }
+
                     }
                 }
             }
