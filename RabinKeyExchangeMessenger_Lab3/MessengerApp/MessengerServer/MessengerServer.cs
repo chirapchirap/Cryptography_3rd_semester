@@ -58,7 +58,7 @@ namespace MessengerServer
 
             // Сериализация списка в формат JSON
             var json = JsonSerializer.Serialize(clientsList);
-            byte[] messageData = Encoding.UTF8.GetBytes(json);
+            byte[] messageData = Encoding.UTF8.GetBytes("UpdatePublicKeys" + json);
 
             // Отправляем список всем клиентам
             foreach (var client in clients.Values)
@@ -106,7 +106,6 @@ namespace MessengerServer
                     // Чтение данных от клиента
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-
                         ClassLib.ChatMessage? chatMessage = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
                         if (chatMessage != null)
                         {
