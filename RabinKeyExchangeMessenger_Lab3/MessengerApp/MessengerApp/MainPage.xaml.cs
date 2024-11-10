@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using ClassLib;
 
@@ -17,7 +18,7 @@ namespace MessengerApp
         private RabinCryptoSystem cryptoSystem;
 
         // Словарь для хранения GUID и публичных ключей других клиентов
-        private Dictionary<Guid, string> clientPublicKeys = new Dictionary<Guid, string>();
+        private Dictionary<Guid, BigInteger> clientPublicKeys = new Dictionary<Guid, BigInteger>();
 
 
         public MainPage()
@@ -237,7 +238,7 @@ namespace MessengerApp
         public class ClientInfo
         {
             public Guid GUID { get; set; }
-            public string PublicKey { get; set; }
+            public BigInteger PublicKey { get; set; }
         }
     }
 }
