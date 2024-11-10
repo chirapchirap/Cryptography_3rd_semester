@@ -31,6 +31,7 @@ namespace MessengerServer
             server.ClientDisconnected += OnClientDisconnected;
             server.MessageReceived += OnMessageReceived;
             server.ExceptionThrown += OnExceptionThrown;
+            server.UpdatedPublicKeysListSent += OnUpdatedPublicKeysListSent;
             await server.StartAsync();
             Logs.Add(new ClassLib.ChatMessage
             {
@@ -41,6 +42,14 @@ namespace MessengerServer
             StatusText.Text = "запущен";
             StatusText.TextColor = Colors.Green;
             stopServerButton.IsEnabled = true;
+        }
+
+        private void OnUpdatedPublicKeysListSent(ClassLib.ChatMessage message)
+        {
+            MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                Logs.Add(message);
+            });
         }
 
         private void OnExceptionThrown(ClassLib.ChatMessage message)
