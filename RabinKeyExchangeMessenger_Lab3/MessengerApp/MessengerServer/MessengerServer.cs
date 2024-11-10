@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ClassLib;
 
@@ -48,6 +49,37 @@ namespace MessengerServer
             return Task.CompletedTask;
         }
 
+        // Метод для отправки списка всех открытых ключей (GUID и открытых ключей) всем клиентам
+        private async Task SendPublicKeysListToAllClientsAsync()
+        {
+            // Преобразуем список подключенных клиентов в формат, пригодный для отправки
+            var clientsList = publicKeys.Select(client => new { client.Key, client.Value }).ToList();
+
+            // Сериализация списка в формат JSON
+            var json = JsonSerializer.Serialize(clientsList);
+            byte[] messageData = Encoding.UTF8.GetBytes(json);
+
+            // Отправляем список всем клиентам
+            foreach (var client in clients.Values)
+            {
+                try
+                {
+                    var stream = client.GetStream();
+                    await stream.WriteAsync(messageData, 0, messageData.Length);
+                }
+                catch (Exception ex)
+                {
+                    ClassLib.ChatMessage exceptionMessage = new ClassLib.ChatMessage
+                    {
+                        Message = $"Ошибка отправки списка ключей клиенту. (Ошибка: {ex.Message})",
+                        SenderGuid = "Сервер",
+                        TimeStamp = DateTime.Now,
+                    };
+                    ExceptionThrown?.Invoke(exceptionMessage);
+                }
+            }
+        }
+
         private async void HandleClientAsync(TcpClient client, Guid clientID)
         {
             try
@@ -65,11 +97,9 @@ namespace MessengerServer
                     bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                     string publicKey = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     publicKeys[clientID] = publicKey;
-                    // Отправка новому клиенту списка идентификаторов всех уже подключённых клиентов
-                    await SendConnectedClientsList(clientID);
 
-                    // Оповещение всех клиентов о подключении нового клиента
-                    NotifyClientsOfNewClient(clientID);
+                    // Отправка списка всех подключенных клиентов (ключи и GUID)
+                    await SendPublicKeysListToAllClientsAsync();
 
                     // Чтение данных от клиента
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -115,16 +145,9 @@ namespace MessengerServer
                 clients.TryRemove(clientID, out _);
                 publicKeys.TryRemove(clientID, out _);
                 client.Close();
-            }
-        }
 
-        private async Task SendConnectedClientsList(Guid newClientID)
-        {
-            if (clients.TryGetValue(newClientID, out TcpClient client))
-            {
-                var connectedClientIds = publicKeys.Keys.ToList();
-                byte[] data = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(connectedClientIds));
-                await client.GetStream().WriteAsync(data, 0, data.Length); 
+                // После того как клиент отключится, отправляем обновленный список ключей всем остальным клиентам
+                await SendPublicKeysListToAllClientsAsync();
             }
         }
 
