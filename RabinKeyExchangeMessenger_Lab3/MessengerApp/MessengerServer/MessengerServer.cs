@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace MessengerServer
     {
         private readonly TcpListener tcpListener;
         private readonly ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
-        private readonly ConcurrentDictionary<Guid, string> publicKeys = new ConcurrentDictionary<Guid, string>();
+        private readonly ConcurrentDictionary<Guid, BigInteger> publicKeys = new ConcurrentDictionary<Guid, BigInteger>();
         public event Action<Guid> ClientConnected;
         public event Action<Guid> ClientDisconnected;
         public event Action<ClassLib.ChatMessage> MessageReceived;
@@ -95,8 +96,9 @@ namespace MessengerServer
 
                     // Чтение открытого ключа клиента
                     bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    string publicKey = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    publicKeys[clientID] = publicKey;
+                    byte[] publicKey = new byte[bytesRead];
+                    Array.Copy(buffer, publicKey, bytesRead);                    
+                    publicKeys[clientID] = new BigInteger(publicKey);
 
                     // Отправка списка всех подключенных клиентов (ключи и GUID)
                     await SendPublicKeysListToAllClientsAsync();
@@ -109,8 +111,8 @@ namespace MessengerServer
                         if (Guid.TryParse(request, out Guid requestedClientID) && publicKeys.ContainsKey(requestedClientID))
                         {
                             // Отправляем запрашиваемый открытый ключ клиенту
-                            string requestedPublicKey = publicKeys[requestedClientID];
-                            byte[] keyData = Encoding.UTF8.GetBytes(requestedPublicKey);
+                            BigInteger requestedPublicKey = publicKeys[requestedClientID];
+                            byte[] keyData = requestedPublicKey.ToByteArray();
                             await stream.WriteAsync(keyData, 0, keyData.Length);
                         }
                         else
