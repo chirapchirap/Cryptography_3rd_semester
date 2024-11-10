@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using ClassLib;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace MessengerApp
@@ -103,13 +105,24 @@ namespace MessengerApp
                     int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length), token);
                     if (bytesRead > 0)
                     {
-                        ClassLib.ChatMessage? message = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-                        if (message != null)
+                        string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                        // Проверяем тип сообщения (например, "UpdatePublicKeys")
+                        if (receivedData.StartsWith("UpdatePublicKeys"))
                         {
-                            MainThread.BeginInvokeOnMainThread(() =>
+                            UpdatePublicKeys(receivedData);
+                        }
+                        else
+                        {
+
+                            ClassLib.ChatMessage? message = System.Text.Json.JsonSerializer.Deserialize<ClassLib.ChatMessage>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                            if (message != null)
                             {
-                                messages.Add(message);
-                            });
+                                MainThread.BeginInvokeOnMainThread(() =>
+                                {
+                                    messages.Add(message);
+                                });
+                            }
                         }
                     }
                     else
@@ -134,6 +147,20 @@ namespace MessengerApp
                     });
                     break;
                 }
+            }
+        }
+
+        private void UpdatePublicKeys(string data)
+        {
+            clientPublicKeys.Clear(); // Очищаем старый список
+
+            // Десериализуем полученные данные, содержащие GUID клиентов и их публичные ключи
+            var keyData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, string>>(data.Substring("UpdatePublicKeys".Length));
+
+            foreach (var entry in keyData)
+            {
+                BigInteger publicKey = BigInteger.Parse(entry.Value); // Парсим публичный ключ
+                clientPublicKeys[entry.Key] = publicKey; // Обновляем словарь
             }
         }
 
