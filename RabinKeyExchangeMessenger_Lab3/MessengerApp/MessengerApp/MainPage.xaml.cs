@@ -14,11 +14,17 @@ namespace MessengerApp
         private NetworkStream networkStream;
         private CancellationTokenSource receiveCts;
         private string clientID;
+        private RabinCryptoSystem cryptoSystem;
+
+        // Словарь для хранения GUID и публичных ключей других клиентов
+        private Dictionary<Guid, string> clientPublicKeys = new Dictionary<Guid, string>();
+
 
         public MainPage()
         {
             InitializeComponent();
             MessagesList.ItemsSource = messages; // привязка коллекции к списку сообщений
+            cryptoSystem = new RabinCryptoSystem();  // Инициализация криптосистемы
         }
 
         private async void ConnectButton_Clicked(object sender, EventArgs e)
@@ -40,12 +46,20 @@ namespace MessengerApp
 
                     UpdateConnectionStatusLabel(clientID);
 
+                    // Отправка публичного ключа при подключении
+                    string publicKey = cryptoSystem.N.ToString();
+                    byte[] publicKeyBytes = Encoding.UTF8.GetBytes(publicKey);
+                    await networkStream.WriteAsync(publicKeyBytes.AsMemory(0, publicKeyBytes.Length));
+
                     messages.Add(new ChatMessage
                     {
                         TimeStamp = DateTime.Now,
                         Message = $"Вы присоединились к чату как {clientID}.",
                         SenderGuid = "Система",
                     });
+
+                    // Получение списка клиентов и их публичных ключей
+                    await ReceiveClientList();
 
                     StartReceivingMessages(receiveCts.Token);
                     connectButton.IsEnabled = false;
@@ -61,6 +75,20 @@ namespace MessengerApp
             else
             {
                 DisconnectFromServer();
+            }
+        }
+
+        private async Task ReceiveClientList()
+        {
+            byte[] buffer = new byte[1024];
+            int bytesRead = await networkStream.ReadAsync(buffer.AsMemory(0, buffer.Length));
+            string clientListJson = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+            var clientList = System.Text.Json.JsonSerializer.Deserialize<List<ClientInfo>>(clientListJson);
+            foreach (var client in clientList)
+            {
+                // Добавляем публичный ключ каждого клиента в словарь
+                clientPublicKeys[client.GUID] = client.PublicKey;
             }
         }
 
@@ -203,6 +231,13 @@ namespace MessengerApp
             {
                 DisconnectFromServer();
             }
+        }
+
+        // Структура для хранения информации о клиенте
+        public class ClientInfo
+        {
+            public Guid GUID { get; set; }
+            public string PublicKey { get; set; }
         }
     }
 }
